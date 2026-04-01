@@ -164,7 +164,7 @@ export default function HomePage() {
             transition={{ duration: 0.7 }}
           >
             <Badge className="mb-5 bg-orange-cta/20 text-orange-cta border-orange-cta/30 hover:bg-orange-cta/20">
-              🏠 Trusted by 50,000+ Pakistanis
+              🏠 Trusted by 50,000+ Indians
             </Badge>
             <h1 className="font-display font-extrabold text-4xl sm:text-5xl md:text-6xl text-white leading-tight mb-5">
               Get Home Services{" "}
