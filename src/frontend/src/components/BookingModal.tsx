@@ -44,6 +44,74 @@ const TIME_SLOTS = [
   "06:00 PM",
 ];
 
+const fallbackServices: Service[] = [
+  {
+    id: 1n,
+    name: "Plumbing",
+    description: "Fix leaks, install pipes, repair fixtures and more.",
+    basePrice: 500n,
+    estimatedDuration: 120n,
+    icon: "🔧",
+  },
+  {
+    id: 2n,
+    name: "Electrician",
+    description:
+      "Wiring, circuit breakers, fan installation and electrical repairs.",
+    basePrice: 600n,
+    estimatedDuration: 90n,
+    icon: "⚡",
+  },
+  {
+    id: 3n,
+    name: "Cleaning",
+    description: "Deep home cleaning, sofa cleaning, carpet washing.",
+    basePrice: 1200n,
+    estimatedDuration: 180n,
+    icon: "🧹",
+  },
+  {
+    id: 4n,
+    name: "AC Repair",
+    description: "AC servicing, gas refill, cooling issues and installation.",
+    basePrice: 1500n,
+    estimatedDuration: 120n,
+    icon: "❄️",
+  },
+  {
+    id: 5n,
+    name: "Painting",
+    description: "Interior and exterior wall painting, waterproofing.",
+    basePrice: 3000n,
+    estimatedDuration: 480n,
+    icon: "🎨",
+  },
+  {
+    id: 6n,
+    name: "Handyman",
+    description: "General repairs, furniture assembly, wall mounting.",
+    basePrice: 400n,
+    estimatedDuration: 60n,
+    icon: "🔨",
+  },
+  {
+    id: 7n,
+    name: "Carpentry",
+    description: "Custom furniture, door/window repair, cabinet making.",
+    basePrice: 800n,
+    estimatedDuration: 150n,
+    icon: "🪚",
+  },
+  {
+    id: 8n,
+    name: "Pest Control",
+    description: "Termite treatment, cockroach control, rodent removal.",
+    basePrice: 2000n,
+    estimatedDuration: 120n,
+    icon: "🐛",
+  },
+];
+
 interface BookingModalProps {
   open: boolean;
   onClose: () => void;
@@ -90,11 +158,15 @@ export default function BookingModal({
   const { data: services } = useQuery<Service[]>({
     queryKey: ["services"],
     queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllServices();
+      if (!actor) return fallbackServices;
+      const result = await actor.getAllServices();
+      return result.length > 0 ? result : fallbackServices;
     },
-    enabled: !!actor && !isFetching,
+    enabled: !isFetching,
+    placeholderData: fallbackServices,
   });
+
+  const displayServices = services ?? fallbackServices;
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -122,7 +194,7 @@ export default function BookingModal({
     if (!actor || !bookingId) return;
     setPayNowLoading(true);
     try {
-      const selectedService = services?.find(
+      const selectedService = displayServices.find(
         (s) => s.id.toString() === form.serviceId,
       );
       const price = selectedService?.basePrice ?? 0n;
@@ -161,7 +233,7 @@ export default function BookingModal({
     onClose();
   };
 
-  const selectedService = services?.find(
+  const selectedService = displayServices.find(
     (s) => s.id.toString() === form.serviceId,
   );
 
@@ -247,7 +319,7 @@ export default function BookingModal({
                   <SelectValue placeholder="Choose a service" />
                 </SelectTrigger>
                 <SelectContent>
-                  {services?.map((s) => (
+                  {displayServices.map((s) => (
                     <SelectItem key={s.id.toString()} value={s.id.toString()}>
                       {s.icon} {s.name}
                     </SelectItem>
