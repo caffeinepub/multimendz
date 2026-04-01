@@ -9,6 +9,7 @@ import BookingPage from "./pages/BookingPage";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import HowItWorksPage from "./pages/HowItWorksPage";
+import ProviderPage from "./pages/ProviderPage";
 import ServicesPage from "./pages/ServicesPage";
 import TrackOrderPage from "./pages/TrackOrderPage";
 
@@ -56,6 +57,12 @@ export const adminRoute = createRoute({
   component: AdminPage,
 });
 
+export const providerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/provider",
+  component: ProviderPage,
+});
+
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   servicesRoute,
@@ -64,6 +71,7 @@ export const routeTree = rootRoute.addChildren([
   trackRoute,
   howItWorksRoute,
   adminRoute,
+  providerRoute,
 ]);
 
 export type Router = ReturnType<typeof createRouter<typeof routeTree>>;

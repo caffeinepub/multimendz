@@ -12,6 +12,7 @@ const navLinks = [
   { label: "How It Works", href: "/how-it-works" },
   { label: "Track Order", href: "/track" },
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Provider", href: "/provider" },
 ];
 
 export default function Navbar() {

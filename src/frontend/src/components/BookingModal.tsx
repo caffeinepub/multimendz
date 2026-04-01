@@ -391,7 +391,7 @@ export default function BookingModal({
                   </Label>
                   <Input
                     id="cust-phone"
-                    placeholder="+92 300 1234567"
+                    placeholder="+91 98765 43210"
                     value={form.phone}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, phone: e.target.value }))
@@ -484,7 +484,7 @@ export default function BookingModal({
                   {selectedService.description}
                 </p>
                 <p className="text-orange-cta font-bold mt-1">
-                  PKR {selectedService.basePrice.toString()}
+                  ₹{selectedService.basePrice.toString()}
                 </p>
               </div>
             )}
@@ -526,7 +526,7 @@ export default function BookingModal({
                   {selectedService?.icon} {selectedService?.name}
                 </span>
                 <span className="font-bold text-navy">
-                  PKR {selectedService?.basePrice.toString()}
+                  ₹{selectedService?.basePrice.toString()}
                 </span>
               </div>
               {form.date && (
@@ -542,7 +542,7 @@ export default function BookingModal({
               <div className="border-t border-border pt-3 flex justify-between items-center">
                 <span className="font-semibold text-navy">Total</span>
                 <span className="font-bold text-lg text-orange-cta">
-                  PKR {selectedService?.basePrice.toString()}
+                  ₹{selectedService?.basePrice.toString()}
                 </span>
               </div>
             </div>
