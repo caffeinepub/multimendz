@@ -206,6 +206,33 @@ export default function AdminPage() {
     onError: () => toast.error("Failed to add provider."),
   });
 
+  const demoProviders = [
+    { name: "Ahmed Khan", serviceTypeIndex: 0 },
+    { name: "Ali Raza", serviceTypeIndex: 1 },
+    { name: "Hassan Malik", serviceTypeIndex: 2 },
+    { name: "Bilal Ahmed", serviceTypeIndex: 3 },
+    { name: "Usman Tariq", serviceTypeIndex: 4 },
+  ];
+
+  const seedDemoMutation = useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error("No actor");
+      const allServices = await actor.getAllServices();
+      if (allServices.length === 0)
+        throw new Error("No services found. Add services first.");
+      for (const dp of demoProviders) {
+        const svcIndex = dp.serviceTypeIndex % allServices.length;
+        await actor.addProvider(dp.name, allServices[svcIndex].id);
+      }
+    },
+    onSuccess: () => {
+      toast.success("5 demo providers added successfully!");
+      queryClient.invalidateQueries({ queryKey: ["all-providers"] });
+    },
+    onError: (e: Error) =>
+      toast.error(e.message || "Failed to seed demo providers."),
+  });
+
   const getServiceName = (id: bigint) =>
     services?.find((s) => s.id === id)?.name ?? `Service #${id}`;
 
@@ -834,89 +861,108 @@ export default function AdminPage() {
                   {providersCount} registered providers
                 </p>
               </div>
-              <Dialog open={addProviderOpen} onOpenChange={setAddProviderOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    className="bg-orange-cta hover:bg-orange-cta/90 text-white"
-                    data-ocid="admin.open_modal_button"
-                  >
-                    <Plus className="w-4 h-4 mr-2" /> Add Provider
-                  </Button>
-                </DialogTrigger>
-                <DialogContent data-ocid="admin.dialog">
-                  <DialogHeader>
-                    <DialogTitle className="font-display text-navy">
-                      Add New Provider
-                    </DialogTitle>
-                    <DialogDescription>
-                      Register a new service provider on the platform.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Provider Name</Label>
-                      <Input
-                        value={providerForm.name}
-                        onChange={(e) =>
-                          setProviderForm((p) => ({
-                            ...p,
-                            name: e.target.value,
-                          }))
-                        }
-                        placeholder="e.g. Ahmed Khan"
-                        data-ocid="admin.input"
-                      />
-                    </div>
-                    <div>
-                      <Label>Service Type</Label>
-                      <Select
-                        value={providerForm.serviceType}
-                        onValueChange={(val) =>
-                          setProviderForm((p) => ({ ...p, serviceType: val }))
-                        }
-                      >
-                        <SelectTrigger data-ocid="admin.select">
-                          <SelectValue placeholder="Select a service..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(services ?? []).map((svc) => (
-                            <SelectItem
-                              key={svc.id.toString()}
-                              value={svc.id.toString()}
-                            >
-                              {svc.icon} {svc.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <DialogFooter className="gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setAddProviderOpen(false)}
-                      data-ocid="admin.cancel_button"
-                    >
-                      Cancel
-                    </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="border-navy text-navy hover:bg-navy/10"
+                  onClick={() => seedDemoMutation.mutate()}
+                  disabled={seedDemoMutation.isPending}
+                  data-ocid="admin.seed_demo_button"
+                >
+                  {seedDemoMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Plus className="w-4 h-4 mr-2" />
+                  )}
+                  Seed 5 Demo Providers
+                </Button>
+                <Dialog
+                  open={addProviderOpen}
+                  onOpenChange={setAddProviderOpen}
+                >
+                  <DialogTrigger asChild>
                     <Button
                       className="bg-orange-cta hover:bg-orange-cta/90 text-white"
-                      onClick={() => addProviderMutation.mutate()}
-                      disabled={
-                        addProviderMutation.isPending ||
-                        !providerForm.name ||
-                        !providerForm.serviceType
-                      }
-                      data-ocid="admin.submit_button"
+                      data-ocid="admin.open_modal_button"
                     >
-                      {addProviderMutation.isPending && (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      )}
-                      Add Provider
+                      <Plus className="w-4 h-4 mr-2" /> Add Provider
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent data-ocid="admin.dialog">
+                    <DialogHeader>
+                      <DialogTitle className="font-display text-navy">
+                        Add New Provider
+                      </DialogTitle>
+                      <DialogDescription>
+                        Register a new service provider on the platform.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Provider Name</Label>
+                        <Input
+                          value={providerForm.name}
+                          onChange={(e) =>
+                            setProviderForm((p) => ({
+                              ...p,
+                              name: e.target.value,
+                            }))
+                          }
+                          placeholder="e.g. Ahmed Khan"
+                          data-ocid="admin.input"
+                        />
+                      </div>
+                      <div>
+                        <Label>Service Type</Label>
+                        <Select
+                          value={providerForm.serviceType}
+                          onValueChange={(val) =>
+                            setProviderForm((p) => ({ ...p, serviceType: val }))
+                          }
+                        >
+                          <SelectTrigger data-ocid="admin.select">
+                            <SelectValue placeholder="Select a service..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(services ?? []).map((svc) => (
+                              <SelectItem
+                                key={svc.id.toString()}
+                                value={svc.id.toString()}
+                              >
+                                {svc.icon} {svc.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter className="gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setAddProviderOpen(false)}
+                        data-ocid="admin.cancel_button"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        className="bg-orange-cta hover:bg-orange-cta/90 text-white"
+                        onClick={() => addProviderMutation.mutate()}
+                        disabled={
+                          addProviderMutation.isPending ||
+                          !providerForm.name ||
+                          !providerForm.serviceType
+                        }
+                        data-ocid="admin.submit_button"
+                      >
+                        {addProviderMutation.isPending && (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        )}
+                        Add Provider
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
 
             {providersLoading ? (
