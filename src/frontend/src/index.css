@@ -1,0 +1,156 @@
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("/assets/fonts/PlusJakartaSans.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/assets/fonts/BricolageGrotesque.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Multimendz Design Tokens - OKLCH (L values as percentages) */
+    /* Primary Navy: #1F3A63 -> oklch(30.4% 0.082 251) */
+    --primary: 30.4% 0.082 251;
+    --primary-foreground: 98% 0.005 251;
+
+    /* Blue Accent: #2F80D0 -> oklch(55% 0.155 251) */
+    --accent: 55% 0.155 251;
+    --accent-foreground: 98% 0.005 251;
+
+    /* Orange CTA: #F47C20 -> oklch(68% 0.185 46) */
+    --cta: 68% 0.185 46;
+    --cta-foreground: 98% 0.005 46;
+
+    /* Background: #F4F6F8 -> oklch(96.5% 0.006 251) */
+    --background: 96.5% 0.006 251;
+    --foreground: 18% 0.025 251;
+
+    /* Card: #FFFFFF */
+    --card: 100% 0 0;
+    --card-foreground: 18% 0.025 251;
+
+    --popover: 100% 0 0;
+    --popover-foreground: 18% 0.025 251;
+
+    /* Secondary text: #6B7280 -> oklch(55% 0.012 260) */
+    --secondary: 55% 0.012 260;
+    --secondary-foreground: 98% 0.005 260;
+
+    --muted: 94% 0.008 251;
+    --muted-foreground: 52% 0.015 260;
+
+    --destructive: 55% 0.22 25;
+    --destructive-foreground: 98% 0.005 25;
+
+    --border: 88% 0.01 251;
+    --input: 88% 0.01 251;
+    --ring: 55% 0.155 251;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --navy: 30.4% 0.082 251;
+    --blue-accent: 55% 0.155 251;
+    --orange-cta: 68% 0.185 46;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui,
+      sans-serif;
+  }
+}
+
+/* Custom utilities */
+.map-grid {
+  background-image: linear-gradient(
+      oklch(80% 0.02 251 / 0.5) 1px,
+      transparent 1px
+    ), linear-gradient(90deg, oklch(80% 0.02 251 / 0.5) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.map-road-h {
+  position: absolute;
+  height: 3px;
+  background: oklch(95% 0.005 0 / 0.8);
+  border-radius: 2px;
+}
+
+.map-road-v {
+  position: absolute;
+  width: 3px;
+  background: oklch(95% 0.005 0 / 0.8);
+  border-radius: 2px;
+}
+
+@keyframes provider-move {
+  0%,
+  100% {
+    transform: translate(0px, 0px);
+  }
+  25% {
+    transform: translate(4px, -3px);
+  }
+  50% {
+    transform: translate(8px, -1px);
+  }
+  75% {
+    transform: translate(5px, 2px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.text-gradient-blue {
+  background: linear-gradient(135deg, oklch(60% 0.18 251), oklch(70% 0.15 220));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
