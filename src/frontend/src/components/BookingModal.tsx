@@ -22,6 +22,7 @@ import {
   Clock,
   CreditCard,
   Loader2,
+  Lock,
   MapPin,
   Phone,
   User,
@@ -30,6 +31,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { Service } from "../backend.d";
 import { useActor } from "../hooks/useActor";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
 const TIME_SLOTS = [
   "09:00 AM",
@@ -124,6 +126,7 @@ export default function BookingModal({
   preSelectedServiceId,
 }: BookingModalProps) {
   const { actor, isFetching } = useActor();
+  const { identity, login, isLoggingIn } = useInternetIdentity();
   const [step, setStep] = useState(1);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [paymentPending, setPaymentPending] = useState(false);
@@ -198,12 +201,12 @@ export default function BookingModal({
         (s) => s.id.toString() === form.serviceId,
       );
       const price = selectedService?.basePrice ?? 0n;
-      const checkoutUrl = await actor.createPaymentSession(
+      const sessionId = await actor.createPaymentSession(
         BigInt(bookingId),
         BigInt(price),
         "usd",
       );
-      window.location.href = checkoutUrl;
+      window.location.href = `https://checkout.stripe.com/pay/${sessionId}`;
     } catch {
       toast.error("Failed to initiate payment. Please try again.");
       setPayNowLoading(false);
@@ -309,79 +312,123 @@ export default function BookingModal({
         {/* Step 1 */}
         {step === 1 && (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="service-select">Select Service</Label>
-              <Select
-                value={form.serviceId}
-                onValueChange={(v) => setForm((f) => ({ ...f, serviceId: v }))}
-              >
-                <SelectTrigger id="service-select" data-ocid="booking.select">
-                  <SelectValue placeholder="Choose a service" />
-                </SelectTrigger>
-                <SelectContent>
-                  {displayServices.map((s) => (
-                    <SelectItem key={s.id.toString()} value={s.id.toString()}>
-                      {s.icon} {s.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="cust-name">
-                <User className="inline w-3 h-3 mr-1" />
-                Full Name
-              </Label>
-              <Input
-                id="cust-name"
-                placeholder="Enter your name"
-                value={form.name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, name: e.target.value }))
-                }
-                data-ocid="booking.input"
-              />
-            </div>
-            <div>
-              <Label htmlFor="cust-phone">
-                <Phone className="inline w-3 h-3 mr-1" />
-                Phone Number
-              </Label>
-              <Input
-                id="cust-phone"
-                placeholder="+92 300 1234567"
-                value={form.phone}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, phone: e.target.value }))
-                }
-                data-ocid="booking.input"
-              />
-            </div>
-            <div>
-              <Label htmlFor="cust-address">
-                <MapPin className="inline w-3 h-3 mr-1" />
-                Address
-              </Label>
-              <Input
-                id="cust-address"
-                placeholder="House/Street/Area"
-                value={form.address}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, address: e.target.value }))
-                }
-                data-ocid="booking.input"
-              />
-            </div>
-            <Button
-              className="w-full bg-orange-cta hover:bg-orange-cta/90 text-white"
-              onClick={() => setStep(2)}
-              disabled={
-                !form.serviceId || !form.name || !form.phone || !form.address
-              }
-              data-ocid="booking.primary_button"
-            >
-              Continue
-            </Button>
+            {!identity ? (
+              /* Login gate */
+              <div className="flex flex-col items-center justify-center py-8 space-y-4 text-center">
+                <div className="w-14 h-14 bg-navy/10 rounded-full flex items-center justify-center">
+                  <Lock className="w-7 h-7 text-navy" />
+                </div>
+                <div>
+                  <p className="font-semibold text-lg text-navy">
+                    Login Required
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Please sign in with Internet Identity to book a service.
+                  </p>
+                </div>
+                <Button
+                  className="bg-navy hover:bg-navy/90 text-white gap-2"
+                  onClick={login}
+                  disabled={isLoggingIn}
+                  data-ocid="booking.primary_button"
+                >
+                  {isLoggingIn ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Lock className="w-4 h-4" />
+                  )}
+                  Sign in with Internet Identity
+                </Button>
+              </div>
+            ) : (
+              /* Booking form */
+              <>
+                <div>
+                  <Label htmlFor="service-select">Select Service</Label>
+                  <Select
+                    value={form.serviceId}
+                    onValueChange={(v) =>
+                      setForm((f) => ({ ...f, serviceId: v }))
+                    }
+                  >
+                    <SelectTrigger
+                      id="service-select"
+                      data-ocid="booking.select"
+                    >
+                      <SelectValue placeholder="Choose a service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {displayServices.map((s) => (
+                        <SelectItem
+                          key={s.id.toString()}
+                          value={s.id.toString()}
+                        >
+                          {s.icon} {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="cust-name">
+                    <User className="inline w-3 h-3 mr-1" />
+                    Full Name
+                  </Label>
+                  <Input
+                    id="cust-name"
+                    placeholder="Enter your name"
+                    value={form.name}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, name: e.target.value }))
+                    }
+                    data-ocid="booking.input"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cust-phone">
+                    <Phone className="inline w-3 h-3 mr-1" />
+                    Phone Number
+                  </Label>
+                  <Input
+                    id="cust-phone"
+                    placeholder="+92 300 1234567"
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, phone: e.target.value }))
+                    }
+                    data-ocid="booking.input"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cust-address">
+                    <MapPin className="inline w-3 h-3 mr-1" />
+                    Address
+                  </Label>
+                  <Input
+                    id="cust-address"
+                    placeholder="House/Street/Area"
+                    value={form.address}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, address: e.target.value }))
+                    }
+                    data-ocid="booking.input"
+                  />
+                </div>
+                <Button
+                  className="w-full bg-orange-cta hover:bg-orange-cta/90 text-white"
+                  onClick={() => setStep(2)}
+                  disabled={
+                    !form.serviceId ||
+                    !form.name ||
+                    !form.phone ||
+                    !form.address
+                  }
+                  data-ocid="booking.primary_button"
+                >
+                  Continue
+                </Button>
+              </>
+            )}
           </div>
         )}
 
